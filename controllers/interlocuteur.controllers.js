@@ -4,20 +4,22 @@ const Interlocuteur = db.interlocuteur;
 const Op = db.Sequelize.Op;
 require('dotenv').config();
 const { transporter, logoUrl, createMailOptions } = require("../middleware/mailerConfig");
-const sendConfirmationEmail = (recipientEmail, confirmationLink, nom,prenom) => {
+const sendConfirmationEmail = (recipientEmail, confirmationLink, nom, prenom) => {
   const subject = "Confirmation Sofitech";
   const htmlContent = `
-  <p><img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;"></p>
+  <p style="text-align: center;">
+    <img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;">
+  </p>
     <p>Bienvenue chez Sofitech !</p>
     <p>Madame, Monsieur ${nom} ${prenom},</p>
-    <p>Dans le cadre de nos derniers échanges, vous nous avez communiqué vos coordonnées, ainsi que vos données.</p>
+    <p>Nous vous remercions pour nos derniers échanges, vous nous avez communiqué dans ce cadre vos coordonnées.</p>
     <p>
 En cliquant sur « j’accepte », vous acceptez que vos données personnelles recueillies par
 CMGM Sofitech soient conservées en conformité avec la note d’information sur le traitement
 des données personnelles de la CMGM SOFITECH disponible sur notre site internet
 (https://sofitech.pro/mentions-legales).
 </p>
-    <a href="${confirmationLink}"><button>Confirmer</button></a>
+    <a href="${confirmationLink}"><button>Accepter</button></a>
     <p>
 Espérant vous accompagner dans vos divers projets.
 </p>
@@ -73,7 +75,7 @@ exports.send_mail_confirmation = async (req, res) => {
     }
     const confirmationLink = `${process.env.HOST}/confirmation/${id}`;
 
-    sendConfirmationEmail(interlocuteur.email, confirmationLink, interlocuteur.nom,interlocuteur.prenom);
+    sendConfirmationEmail(interlocuteur.email, confirmationLink, interlocuteur.nom, interlocuteur.prenom);
 
     res.send({ message: "interlocuteur send succefuly " });
   } catch (err) {
@@ -84,15 +86,15 @@ exports.send_mail_confirmation = async (req, res) => {
 
 exports.create_action = (req, res) => {
   const insert = {
-    nom:req.body.nom,
-    prenom:req.body.prenom,
-    email:req.body.email,
-    adresse:req.body.adresse,
-    code_postale:req.body.code_postale,
-    tel:req.body.tel,
-    fonction_inter:req.body.fonction_inter,
+    nom: req.body.nom,
+    prenom: req.body.prenom,
+    email: req.body.email,
+    adresse: req.body.adresse,
+    code_postale: req.body.code_postale,
+    tel: req.body.tel,
+    fonction_inter: req.body.fonction_inter,
     id_utili: req.body.id_utili,
-    id_soc:req.body.id_soc,
+    id_soc: req.body.id_soc,
     isConfirmed: req.body.isConfirmed || 0,
   };
 
@@ -100,7 +102,7 @@ exports.create_action = (req, res) => {
     .then(data => {
       const confirmationLink = `${process.env.HOST}/confirmation/${data.id_interlocuteur}`;
 
-      sendConfirmationEmail(data.email, confirmationLink,data.nom,data.prenom);
+      sendConfirmationEmail(data.email, confirmationLink, data.nom, data.prenom);
       res.send({ message: 'Interlocuteur ajouté avec succès', data });
     })
     .catch(err => {
@@ -194,6 +196,7 @@ exports.archiveInterlocuteur = async (req, res) => {
           [Op.lt]: dixJoursAuparavant,
         },
         isConfirmed: 0,
+        reminderSent: 0,
       },
     });
 
@@ -211,57 +214,67 @@ exports.archiveInterlocuteur = async (req, res) => {
     for (const interlocuteur of interlocuteursARelancer) {
       const confirmationLink = `${process.env.HOST}/confirmation/${interlocuteur.id}`;
       const htmlContentRelance = `
-      <p><img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;"></p>
-        <p>Bienvenue chez Sofitech !</p>
-        <p>Madame, Monsieur ${interlocuteur.nom} ${interlocuteur.prenom},</p>
-        <p>Dans le cadre de nos derniers échanges, vous nous avez communiqué vos coordonnées, ainsi que vos données.</p>
-        <p>
-    En cliquant sur « j’accepte », vous acceptez que vos données personnelles recueillies par
-    CMGM Sofitech soient conservées en conformité avec la note d’information sur le traitement
-    des données personnelles de la CMGM SOFITECH disponible sur notre site internet
-    (https://sofitech.pro/mentions-legales).
-    </p>
-        <a href="${confirmationLink}"><button>Confirmer</button></a>
-        <p>
-    Espérant vous accompagner dans vos divers projets.
-    </p>
-    <p>
-    Au plaisir de poursuivre nos échanges.
-    </p>
-    <p>
-    Bien cordialement,
-    </p>
-    <p>
-    L’équipe SOFITECH
-    </p>
-    <p style="color:blue;">
-    En application de la loi « informatique et libertés » du 6 janvier 1978 modifiée, et du Règlement
-    Général sur la Protection des Données (RGPD 2016/679 (UE), vous disposez à tout moment d’un
-    droit d’accès, de rectification, de portabilité et d’effacement de vos données ou encore de limitation de
-    traitement. Vos données sont utilisées uniquement dans le cadre de notre activité de caution mutuelle
-    et ne font l’objet d’aucune vente à un tiers. Vous pouvez également, pour des motifs légitimes, vous
-    opposer au traitement des données vous concernant. Pour exercer l’un de ces droits ou obtenir des
-    informations supplémentaires, adressez-nous un courrier électronique à l’adresse suivante :
-    accueil@sofitech.pro
-    </p>
-    <p>
-    Dans le respect de la réglementation et le cadre uniquement de notre activité de cautionnement, vos
-    données sont susceptibles d’être partagées avec nos partenaires.
-    </p>
+      <p style="text-align: center;">
+        <img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;">
+      </p>
+      <p>Bienvenue chez Sofitech !</p>
+      <p>Madame, Monsieur ${nom} ${prenom},</p>
+      <p>Nous vous remercions pour nos derniers échanges, vous nous avez communiqué dans ce cadre vos coordonnées.</p>
+      <p>
+  En cliquant sur « j’accepte », vous acceptez que vos données personnelles recueillies par
+  CMGM Sofitech soient conservées en conformité avec la note d’information sur le traitement
+  des données personnelles de la CMGM SOFITECH disponible sur notre site internet
+  (https://sofitech.pro/mentions-legales).
+  </p>
+      <a href="${confirmationLink}"><button>Accepter</button></a>
+      <p>
+  Espérant vous accompagner dans vos divers projets.
+  </p>
+  <p>
+  Au plaisir de poursuivre nos échanges.
+  </p>
+  <p>
+  Bien cordialement,
+  </p>
+  <p>
+  L’équipe SOFITECH
+  </p>
+  <p style="color:blue;">
+  En application de la loi « informatique et libertés » du 6 janvier 1978 modifiée, et du Règlement
+  Général sur la Protection des Données (RGPD 2016/679 (UE), vous disposez à tout moment d’un
+  droit d’accès, de rectification, de portabilité et d’effacement de vos données ou encore de limitation de
+  traitement. Vos données sont utilisées uniquement dans le cadre de notre activité de caution mutuelle
+  et ne font l’objet d’aucune vente à un tiers. Vous pouvez également, pour des motifs légitimes, vous
+  opposer au traitement des données vous concernant. Pour exercer l’un de ces droits ou obtenir des
+  informations supplémentaires, adressez-nous un courrier électronique à l’adresse suivante :
+  accueil@sofitech.pro
+  </p>
+  <p>
+  Dans le respect de la réglementation et le cadre uniquement de notre activité de cautionnement, vos
+  données sont susceptibles d’être partagées avec nos partenaires.
+  </p>
       `; // Incluez votre contenu HTML pour la relance ici
       const mailOptions = createMailOptions(interlocuteur.email, 'Rappel de confirmation de compte', htmlContentRelance);
       await transporter.sendMail(mailOptions);
+      await Interlocuteur.update({ reminderSent: 1 }, {
+        where: {
+          id_interlocuteur: interlocuteur.id_interlocuteur, // Assurez-vous que cette propriété correspond à la clé primaire de votre table
+        },
+      });
     }
+
 
     // Suppression des interlocuteurs et envoi d'e-mails de notification
     for (const interlocuteur of interlocuteursASupprimer) {
       const htmlContentSuppression = `
-        <p><img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;"></p>
+        <p style="text-align: center;">
+          <img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;">
+        </p>
         <p>Bonjour,</p>
-        <p>Nous vous informons que votre compte au sein de notre système CRM Sofitech n'a pas été confirmé dans les délais impartis. En conséquence, et conformément à nos politiques de protection des données et de respect de la vie privée, nous avons procédé à la suppression de toutes les informations vous concernant de notre base de données.</p>
+        <p>Nous n’avons pas reçu l’acceptation de l’enregistrement de vos données personnelles dans notre CRM Sofitech dans les délais impartis. En conséquence, et conformément à nos politiques de protection des données et de respect de la vie privée, nous avons procédé à la suppression de toutes les informations vous concernant.</p>
         <p>Cette mesure garantit la sécurité et la confidentialité de vos données personnelles, conformément au Règlement Général sur la Protection des Données (RGPD) et à notre engagement envers la protection de la vie privée de nos utilisateurs.</p>
-        <p>Si la suppression de votre compte a été effectuée par erreur ou si vous souhaitez réactiver votre compte et accepter l'utilisation de vos données, nous vous invitons à nous contacter directement à l'adresse <a href="mailto:accueil@sofitech.pro">accueil@sofitech.pro</a> ou à créer un nouveau compte sur notre plateforme.</p>
-        <p>Nous vous remercions pour votre compréhension et restons à votre disposition pour toute question ou information supplémentaire.</p>
+        <p>Si la suppression de vos données a été effectuée par erreur ou si vous souhaitez les réactiver, nous vous invitons à nous contacter directement à l'adresse accueil@sofitech.pro</p>
+        <p>Nous restons à votre disposition pour toute question ou information complémentaire.</p>
         <p>Bien cordialement,</p>
         <p>L’équipe SOFITECH</p>
         <p style="color:blue;">
