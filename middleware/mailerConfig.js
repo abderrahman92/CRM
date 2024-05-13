@@ -12,9 +12,10 @@ const transporter = nodemailer.createTransport({
 
 const logoUrl = "https://sofitech.pro/wp-content/uploads/2018/12/Groupe-1.png";
 
-const createMailOptions = (recipientEmail, subject, htmlContent) => ({
+const createMailOptions = (recipientEmail, subject, htmlContent,cc) => ({
   from: "sofitech_mail_automatique@sofitech.pro",
   to: recipientEmail,
+  cc: cc, 
   subject: subject,
   html: htmlContent,
 });

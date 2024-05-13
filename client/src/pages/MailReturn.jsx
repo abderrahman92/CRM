@@ -12,7 +12,6 @@ export const MailReturn = () => {
               {/* Icône de confirmation (coche) */}
               <h1 className="text-success"><i className="bi bi-check-circle-fill"></i></h1>
               {/* Emoji pour une touche sympathique */}
-              <h1>🎉</h1>
               {/* Message de remerciement */}
               <h2 className="card-title">Confirmation réussie!</h2>
               <p className="card-text">Merci pour votre confiance.</p>

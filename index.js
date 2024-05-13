@@ -18,6 +18,9 @@ app.use(express.static(path.join(__dirname , "client","build")))
 app.get('/register', (req,res) =>{
   res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });
+app.get('/confirmation', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
 app.get('/login', (req,res) =>{
   res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });

@@ -1,10 +1,12 @@
 
 const db = require("../models");
 const Interlocuteur = db.interlocuteur;
+const User = db.user;
 const Op = db.Sequelize.Op;
 require('dotenv').config();
 const { transporter, logoUrl, createMailOptions } = require("../middleware/mailerConfig");
-const sendConfirmationEmail = (recipientEmail, confirmationLink, nom, prenom) => {
+const sendConfirmationEmail = (recipientEmail, confirmationLink, nom, prenom, ccEmail) => {
+  console.log(ccEmail,"ccEmail");
   const subject = "Confirmation Sofitech";
   const htmlContent = `
   <p style="text-align: center;">
@@ -47,7 +49,7 @@ Dans le respect de la réglementation et le cadre uniquement de notre activité 
 données sont susceptibles d’être partagées avec nos partenaires.
 </p>
   `;
-  const mailOptions = createMailOptions(recipientEmail, subject, htmlContent);
+  const mailOptions = createMailOptions(recipientEmail, subject, htmlContent,ccEmail);
 
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
@@ -68,14 +70,20 @@ exports.send_mail_confirmation = async (req, res) => {
       where: {
         id_interlocuteur: id,
       },
+      include: [{
+        model: User, // Assurez-vous que la relation est bien configurée pour joindre User
+        as: 'user' // Cela dépend de la manière dont vous avez défini les associations
+      }]
     });
 
     if (!interlocuteur) {
       return res.status(404).send({ message: "Interlocuteur not found with the provided ID." });
     }
     const confirmationLink = `${process.env.HOST}/confirmation/${id}`;
+    const ccEmail = interlocuteur.user ? interlocuteur.user.email : null;
+    console.log(ccEmail,"ccEmail"); 
 
-    sendConfirmationEmail(interlocuteur.email, confirmationLink, interlocuteur.nom, interlocuteur.prenom);
+    sendConfirmationEmail(interlocuteur.email, confirmationLink, interlocuteur.nom, interlocuteur.prenom,ccEmail);
 
     res.send({ message: "interlocuteur send succefuly " });
   } catch (err) {
@@ -98,12 +106,26 @@ exports.create_action = (req, res) => {
     isConfirmed: req.body.isConfirmed || 0,
   };
 
+  // Création de l'interlocuteur
   Interlocuteur.create(insert)
     .then(data => {
-      const confirmationLink = `${process.env.HOST}/confirmation/${data.id_interlocuteur}`;
+      // Recherche de l'email de l'utilisateur associé
+      User.findByPk(req.body.id_utili)
+        .then(user => {
+          const ccEmail = user ? user.email : null; // Assurez-vous que l'email existe
+          const confirmationLink = `${process.env.HOST}/confirmation/${data.id_interlocuteur}`;
 
-      sendConfirmationEmail(data.email, confirmationLink, data.nom, data.prenom);
-      res.send({ message: 'Interlocuteur ajouté avec succès', data });
+          // Envoi de l'email avec CC
+          sendConfirmationEmail(data.email, confirmationLink, data.nom, data.prenom, ccEmail);
+
+          res.send({ message: 'Interlocuteur ajouté avec succès', data });
+        })
+        .catch(err => {
+          console.error('Failed to retrieve user for CC: ', err);
+          // Continue sans CC si l'utilisateur n'est pas trouvé
+          sendConfirmationEmail(data.email, confirmationLink, data.nom, data.prenom);
+          res.send({ message: 'Interlocuteur ajouté avec succès, mais CC non envoyé.', data });
+        });
     })
     .catch(err => {
       res.status(500).send({
@@ -111,6 +133,7 @@ exports.create_action = (req, res) => {
       });
     });
 };
+
 
 exports.confirmation = (req, res) => {
   const id = req.params.id;
@@ -130,7 +153,7 @@ exports.confirmation = (req, res) => {
   })
     .then(num => {
       if (num == 1) {
-        res.send({ message: "Confirmation réussie !" });
+        res.send({ message: "Confirmation réussie !",interlocuteurId: interlocuteurId });
       } else {
         res.status(404).send({ message: "Interlocuteur non trouvé avec l'ID fourni." });
       }
@@ -198,6 +221,10 @@ exports.archiveInterlocuteur = async (req, res) => {
         isConfirmed: 0,
         reminderSent: 0,
       },
+      include: [{
+        model: User,
+        as: 'user'
+      }]
     });
 
     // Recherche d'interlocuteurs à supprimer
@@ -208,11 +235,16 @@ exports.archiveInterlocuteur = async (req, res) => {
         },
         isConfirmed: 0,
       },
+      include: [{
+        model: User,
+        as: 'user'
+      }]
     });
 
     // Envoi d'e-mails de relance
     for (const interlocuteur of interlocuteursARelancer) {
       const confirmationLink = `${process.env.HOST}/confirmation/${interlocuteur.id}`;
+      const ccEmail = interlocuteur.user ? interlocuteur.user.email : null;
       const htmlContentRelance = `
       <p style="text-align: center;">
         <img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;">
@@ -254,7 +286,7 @@ exports.archiveInterlocuteur = async (req, res) => {
   données sont susceptibles d’être partagées avec nos partenaires.
   </p>
       `; // Incluez votre contenu HTML pour la relance ici
-      const mailOptions = createMailOptions(interlocuteur.email, 'Rappel de confirmation de compte', htmlContentRelance);
+      const mailOptions = createMailOptions(interlocuteur.email, 'Rappel de confirmation de compte', htmlContentRelance,ccEmail);
       await transporter.sendMail(mailOptions);
       await Interlocuteur.update({ reminderSent: 1 }, {
         where: {
@@ -266,6 +298,7 @@ exports.archiveInterlocuteur = async (req, res) => {
 
     // Suppression des interlocuteurs et envoi d'e-mails de notification
     for (const interlocuteur of interlocuteursASupprimer) {
+      const ccEmail = interlocuteur.user ? interlocuteur.user.email : null;
       const htmlContentSuppression = `
         <p style="text-align: center;">
           <img src="${logoUrl}" alt="Sofitech Logo" style="max-width: 100%; height: auto;">
@@ -281,7 +314,7 @@ exports.archiveInterlocuteur = async (req, res) => {
         En application de la loi « informatique et libertés » du 6 janvier 1978 modifiée, et du Règlement Général sur la Protection des Données (RGPD 2016/679 (UE), vous disposez à tout moment d’un droit d’accès, de rectification, de portabilité et d’effacement de vos données ou encore de limitation du traitement. Pour exercer l’un de ces droits ou obtenir des informations supplémentaires, veuillez nous contacter.
         </p>
         `; // Incluez votre contenu HTML pour la notification de suppression ici
-      const mailOptions = createMailOptions(interlocuteur.email, 'Suppression de compte', htmlContentSuppression);
+      const mailOptions = createMailOptions(interlocuteur.email, 'Suppression de compte', htmlContentSuppression,ccEmail);
       await Interlocuteur.destroy({ where: { id_interlocuteur: interlocuteur.id_interlocuteur } });
       await transporter.sendMail(mailOptions);
     }
