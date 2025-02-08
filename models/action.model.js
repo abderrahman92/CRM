@@ -30,6 +30,12 @@ module.exports =(sequelize,Sequelize)=>{
     besoin: {
       type: Sequelize.STRING,
     },
+    investissement: {
+      type: Sequelize.STRING,
+    },
+    montant: {
+      type: Sequelize.STRING,
+    },
     date_factor: {
       type: Sequelize.STRING,
     },

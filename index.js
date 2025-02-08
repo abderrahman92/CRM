@@ -2,16 +2,14 @@
 const express = require("express");
 const cors = require("cors");
 const path =require('path')
-const proxy = require('express-http-proxy');
 const app = express();
 const PORT = process.env.PORT || 8080 ;
-const axios = require("axios")
+
 const db = require("./models");
-const { user } = require("./models");
-const { hostname } = require("os");
+
 const Role = db.role;
-const User = db.user;
-const Societe = db.societe;
+
+require('dotenv').config();
 var corsOptions = {
   origin: "https://crm.sofitech.pro"
 };
@@ -19,7 +17,7 @@ var corsOptions = {
 app.use(cors(corsOptions));
 console.log(cors(corsOptions))
 app.use(express.static(path.join(__dirname , "client","build")))
-//all path in front end 
+//all path in front end
 app.get('/register', (req,res) =>{
   res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });
@@ -66,7 +64,21 @@ app.get('/admin', (req,res) =>{
 app.get('/User/Info/:id', (req,res) =>{
   res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });
-
+app.get('/change-password', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
+app.get('/reset-password/:id', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
+app.get('/forget-password', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
+app.get('/confirmation/:id', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
+app.get('/reject/:id', (req,res) =>{
+  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+});
 // parse requests of content-type - application/json
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
@@ -125,10 +137,10 @@ function initial() {
 let mysql = require('mysql2');
 
 let connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Adminsqlsofcem43/',
-  database: 'testdb'
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 connection.connect(function(err) {
@@ -139,17 +151,10 @@ connection.connect(function(err) {
   console.log('Connected to the MySQL server.');
 });
 
-//syncroniser la base de donner 
 
-/*
-db.sequelize.sync({force: true}).then(() => {
-  console.log('Drop and Resync Db');
-  initial();
-});
-*/
 
 //listen port 
-app.listen(PORT,'51.255.209.156', () => {
+app.listen(PORT,process.env.PORT, () => {
   console.log(`Server is running `);
 });
 

@@ -14,6 +14,9 @@ module.exports =(sequelize,Sequelize)=>{
     email: {
       type: Sequelize.STRING
     },
+    sexe: {
+      type: Sequelize.STRING
+    },
     adresse: {
       type: Sequelize.STRING
     },
@@ -25,7 +28,13 @@ module.exports =(sequelize,Sequelize)=>{
     },
     fonction_inter: {
       type: Sequelize.STRING
-    }
+    },
+    isConfirmed: {
+      type: Sequelize.INTEGER,
+    },
+    reminderSent: {
+      type: Sequelize.INTEGER,
+    },
   });
   return Interlocuteur;
 };

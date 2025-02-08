@@ -20,6 +20,7 @@ import RoleUser from "../controllers/Role";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import CircularProgress from '@mui/material/CircularProgress';
+require('dotenv').config();
 function sleep(delay = 0) {
   return new Promise((resolve) => {
     setTimeout(resolve, delay);
@@ -33,13 +34,10 @@ const AddTutorial = () => {
   const required = checkForm.required;
   const vsiret = checkForm.vsiret;
   const vsiren = checkForm.vsiren;
-  const vcode_postal = checkForm.vcode_postal;
-  const cville = checkForm.cville;
+
   const vsyndicat = checkForm.vobservation;
   const vtel = checkForm.vtel;
   const vpays = checkForm.vpays;
-  const vadresse = checkForm.vadresse;
-  const montant = checkForm.montant;
   const user = AuthService.getCurrentUser();
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState([]);
@@ -227,7 +225,7 @@ const AddTutorial = () => {
   const getAPINSEE = () => {
 
     return axios.get(chaine, {
-      headers: { "Authorization": ` Bearer 0d8966099937f4d67b63e5ae5266c5f2922aca4fb595b62f` }
+      headers: { "Authorization": ` Bearer ${process.env.API_TOKEN}` }
 
     });
   }

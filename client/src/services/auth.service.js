@@ -72,6 +72,21 @@ class AuthService {
 
     });
   }
+ 
+
+  // Nouvelle méthode : Modifier un utilisateur (via API)
+  updateUser(userId, username, email,roles){
+    return axios.put(API_URL + `update_user/${userId}`, {
+      username,
+      email,
+      roles,
+    })
+  }
+  // Nouvelle méthode : Modifier un utilisateur (via API)
+  deleteUser(userId) {
+    return axios.delete(API_URL + `user_delete/${userId}`)
+  }
+  
   
 
   getCurrentUser() {
@@ -99,6 +114,7 @@ class AuthService {
       
     });
   }
+  
 }
 
 export default new AuthService();

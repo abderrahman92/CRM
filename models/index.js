@@ -19,6 +19,7 @@ const sequelize = new Sequelize(
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
+db.queryInterface = sequelize.getQueryInterface(); 
 db.user = require("../models/user.model.js")(sequelize, Sequelize);
 db.historique_auth = require("../models/historique_auth.js")(sequelize, Sequelize);
 db.interlocuteur = require("../models/interlocuteur.model.js")(sequelize, Sequelize);
@@ -63,4 +64,5 @@ db.societe.hasMany(db.police, {foreignKey: 'id_soc', sourceKey: 'siret'});
 db.societe.hasMany(db.contrat, {foreignKey: 'id_soc', sourceKey: 'siret'});
 
 db.ROLES = ["1", "2", "3","4","5","6","7","8"];
+
 module.exports = db;

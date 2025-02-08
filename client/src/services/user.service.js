@@ -26,6 +26,17 @@ class UserService {
   getAdminBoard() {
     return axios.get(API_URL + 'admin-societe', { headers: authHeader() });
   }
+   // Nouvelle méthode : Supprimer un utilisateur
+   deleteUser(userId) {
+    return axios.delete(API_URL + `delete_user/${userId}`, { headers: authHeader() });
+  }
+
+  // Nouvelle méthode : Modifier un utilisateur (via API)
+  updateUser = (userId, userData) => {
+    return axios.put(API_URL + `update_user/${userId}`, userData, {
+      headers: authHeader(),
+    })
+  }
 }
 
 export default new UserService();

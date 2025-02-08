@@ -94,6 +94,19 @@ const DashboardAdmin = () => {
       (new Date(task.date_rdv) - valueDate2) / mysn < 0 &&
       (new Date(task.date_rdv) - valueDate1) / mysn > 0
   );
+  const fltr_inter = interlocuteur.filter(
+    (task) =>
+      (new Date(task.createdAt) - valueDate2) / mysn < 0 &&
+      (new Date(task.createdAt) - valueDate1) / mysn > 0
+  );
+  const fltr_societe = societe.filter(
+    (task) =>
+      (new Date(task.createdAt) - valueDate2) / mysn < 0 &&
+      (new Date(task.createdAt) - valueDate1) / mysn > 0
+  );
+
+  console.log(fltr_inter, fltr_societe, fltr_date);
+  
 
   const handleChangeDate1 = (newValue) => {
     setValueDate1(newValue);
@@ -253,14 +266,14 @@ const DashboardAdmin = () => {
                               </TableCell>
                               <TableCell align="center">
                                 {
-                                  interlocuteur.filter(
+                                  fltr_inter.filter(
                                     (task) => task.id_utili === row.id
                                   ).length
                                 }
                               </TableCell>
                               <TableCell align="center">
                                 {
-                                  societe.filter(
+                                  fltr_societe.filter(
                                     (task) => task.id_utili === row.id
                                   ).length
                                 }

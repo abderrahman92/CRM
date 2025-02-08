@@ -12,6 +12,7 @@ exports.create_societe = (req, res) => {
     annee_soc:req.body.annee_soc,
     date_creation_soc:req.body.date_creation_soc,
     activite_soc:req.body.activite_soc,
+    libelle_naf:req.body.libelle_naf,
     ville_soc:req.body.ville_soc,
     pays:req.body.pays,
     adresse_local:req.body.adresse_local,

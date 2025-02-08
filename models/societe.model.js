@@ -20,6 +20,9 @@ module.exports =(sequelize,Sequelize)=>{
     activite_soc:{
       type:Sequelize.STRING
     },
+    libelle_naf: {
+      type: Sequelize.STRING
+    },
     adresse_local: {
       type: Sequelize.STRING
     },

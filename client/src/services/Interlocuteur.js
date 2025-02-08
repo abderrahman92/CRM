@@ -22,6 +22,9 @@ class AuthInterlocuteur {
   update = (id, data) => {
   return  axios.put(API_URL + `interlocuteur/update/${id}`, data);
 };
+archiveExpired() {
+  return axios.get(API_URL + "archiveInterlocuteur");
+}
  
 }
 
